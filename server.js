@@ -33,16 +33,28 @@ app.get('/contact/send-message', function (req, res){
     res.sendFile(__dirname + '/views/contact.hbs');
 }); 
 app.post('/contact/send-message', (req, res) => {
-
-  const { author, sender, title, message } = req.fields;
-  if(author && sender && title && message && req.files.image.name) {
-    res.render('contact', { isSent: true, name: req.files.image.
-      name });
-  }
-  else {
-    res.render('contact', { isError: true, name: req.files.image.name });
-  }
-});
+  const form = formidable.IncomingForm({
+    multiples: true,
+    uploadDir: path.join(__dirname, '/public/upload')
+  });
+  
+  form.parse(req);
+  form.on('fileBegin', (name, file) => {
+    file.path = __dirname + '/public/upload' + file.name;
+  });
+  form.on('file', (name, file) => {
+    console.log('uploaded file' + file.name);
+  });
+  res.sendFile(__dirname + '/views/contact.hbs')
+//   const { author, sender, title, message } = req.fields;
+//   if(author && sender && title && message && req.files.image.name) {
+//     res.render('contact', { isSent: true, name: req.files.image.
+//       name });
+//   }
+//   else {
+//     res.render('contact', { isError: true, name: req.files.image.name });
+//   }
+// });
 
 app.get('/info', (req, res) => {
   res.render('info');
