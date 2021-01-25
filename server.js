@@ -1,5 +1,5 @@
 const express = require('express');
-const formidableMiddleware = require('express-formidable');
+// const formidableMiddleware = require('express-formidable');
 const formidable = require('formidable'); 
 const path = require('path');
 const hbs = require('express-handlebars');
@@ -10,7 +10,7 @@ app.set('view engine', '.hbs');
 
 app.use(express.static(path.join(__dirname, '/public')));
 app.use(express.urlencoded({ extended: false }));
-app.use(formidableMiddleware());
+// app.use(formidableMiddleware());
 
 app.get('/', (req, res) => {
   res.render('index');
@@ -24,37 +24,29 @@ app.get('/about', (req, res) => {
   res.render('about', {layout: 'dark'});
 });
 
-app.get('/contact', (req, res, next) => {
+app.get('/contact', (req, res) => {
   res.render('contact');
-  next();
 });
 
-app.get('/contact/send-message', function (req, res){
-    res.sendFile(__dirname + '/views/contact.hbs');
-}); 
 app.post('/contact/send-message', (req, res) => {
-  const form = formidable.IncomingForm({
-    multiples: true,
-    uploadDir: path.join(__dirname, '/public/upload')
-  });
-  
+  var form = new formidable.IncomingForm();
   form.parse(req);
-  form.on('fileBegin', (name, file) => {
-    file.path = __dirname + '/public/upload' + file.name;
-  });
-  form.on('file', (name, file) => {
-    console.log('uploaded file' + file.name);
-  });
-  res.sendFile(__dirname + '/views/contact.hbs')
-//   const { author, sender, title, message } = req.fields;
-//   if(author && sender && title && message && req.files.image.name) {
-//     res.render('contact', { isSent: true, name: req.files.image.
-//       name });
-//   }
-//   else {
-//     res.render('contact', { isError: true, name: req.files.image.name });
-//   }
-// });
+  const { author, sender, title, message } = req.body;
+  console.log(form);
+  if(author && sender && title && message) {
+    form.on('fileBegin', (name, file) => {
+      file.path = __dirname + '/public/upload/' + file.name;
+    });
+    form.on('file', (name, file) => {
+      console.log('Uploaded ' + file.name);
+    });
+    res.render('contact', { isSent: true, name: req.body.image.
+      name });
+  }
+  else {
+    res.render('contact', { isError: true, name: req.files });
+  }
+});
 
 app.get('/info', (req, res) => {
   res.render('info');
